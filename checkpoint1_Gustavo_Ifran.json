@@ -1,0 +1,177 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f10ce0bb-4a80-43ff-a925-8a1cca45546f",
+      "name": "When chat message received",
+      "webhookId": "70af7829-3ea9-4325-8752-7a78607cfa77"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "[ROL]\nSos el Asistente Operativo de Triaje de Gestión de Reintegros y Autorizaciones Médicas para Socios de Cobertura de Salud. Tu comportamiento es profesional, preciso, empático y estructurado.\n\n[ÁMBITO]\nAtendés consultas de socios relacionadas con la presentación de trámites de reintegro de gastos médicos y solicitudes de autorización previa para prácticas, estudios, cirugías o prestaciones ambulatorias y de alta complejidad.\n\n[OBJETIVO]\n1. Identificar si el socio requiere una Autorización Previa o la presentación de un Reintegro.\n2. Determinar la práctica, especialidad o tipo de estudio solicitado.\n3. Consultar activamente la herramienta de requisitos (Requisitos Prestaciones) para obtener la documentación obligatoria exigida según el tipo de trámite.\n4. Informar al socio de manera clara la lista exacta de requisitos o indicar si la solicitud cumple con la documentación mínima para iniciar el trámite.\n\n[REGLAS Y RESTRICCIONES OPERATIVAS]\n- Uso de herramientas: Cuando el socio consulte por los requisitos o condiciones de una práctica o reintegro, DEBES invocar la herramienta lateral 'Requisitos prestaciones' pasando el tipo de trámite o la especialidad como parámetro de búsqueda.\n- Calificación médica: NO tenés permitido emitir diagnósticos médicos, opinar sobre tratamientos ni aprobar/rechazar médicamente una solicitud de forma definitiva.\n- Lenguaje: Mantener una comunicación formal en español neutro. Queda estrictamente prohibida la utilización de giros de lenguaje inclusivo o informal.\n- Escalamiento y Límites: Si la consulta del socio excede el alcance del manual de requisitos o si se trata de un caso de urgencia médica, derivá inmediatamente la atención indicando que la solicitud será auditada por un auditor médico humano.",
+          "maxIterations": 6
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7c2360fe-18ce-4931-adcb-fc022b172c83",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        208
+      ],
+      "id": "b713d7f3-cb34-4293-a829-a879200097bb",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "TJdEFwTqGsQbNZ59",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Herramienta para consultar el Manual Operativo de Reintegros y Autorizaciones Médicas. Úsala autónomamente para consultar los requisitos obligatorios, documentación necesaria y observaciones para la gestión de trámites de reintegro o autorización previa.",
+        "documentId": {
+          "__rl": true,
+          "value": "1lYeAOdrJOUidMZlShcHpr0CZjRrtltvt435CP_sopnk",
+          "mode": "list",
+          "cachedResultName": "Manual_Reintegros_Autorizaciones",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lYeAOdrJOUidMZlShcHpr0CZjRrtltvt435CP_sopnk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Requisitos",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1lYeAOdrJOUidMZlShcHpr0CZjRrtltvt435CP_sopnk/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        208
+      ],
+      "id": "66d6d4b1-cd9d-4911-b537-54c83c1fe352",
+      "name": "Get row(s) in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "glGkCywtejD24zbf",
+          "name": "Google Sheets account- Coderhouse"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "gustavo.ifran87@gmail.com",
+        "subject": "==[LOG] Agente de soporte. Tarea Completada",
+        "emailType": "text",
+        "message": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "9012c4c8-d428-406c-afe0-068ebedc234d",
+      "name": "Send a message",
+      "webhookId": "95f67abd-6661-4303-9e33-ff92e610e883",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "AmmFWeCZisFgGs9h",
+          "name": "Gmail account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "ae8f7f34-4409-4100-b0cf-0412d2965d71",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "177660f91381eabccd8b4a4e8cbccd78dd97d6b54fd7c1a7dd7298f697175ecc"
+  },
+  "nodeGroups": [],
+  "id": "EIeRnvMwTdAkoYWO",
+  "tags": []
+}
